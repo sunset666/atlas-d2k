@@ -2,8 +2,8 @@
 
 # set -x  # for logging and debugging
 
-# allowed values of HUBMAP_INSTANCE
-hubmap_instance_strings=" prod test dev proto stage pittdev cmudev "
+# allowed values of NIDDK_INSTANCE
+niddk_instance_strings=" prod dev "
 
 # function to find the path to this script
 function get_dir_of_this_script () {
@@ -26,14 +26,14 @@ contains() {
 
 
 # check for instance info
-if [[ -z "${HUBMAP_INSTANCE}" ]] ; then
-    echo "HUBMAP_INSTANCE is not defined"
+if [[ -z "${NIDDK_INSTANCE}" ]] ; then
+    echo "NIDDK_INSTANCE is not defined"
     exit -1
 else
-    instance="${HUBMAP_INSTANCE}"
+    instance="${NIDDK_INSTANCE}"
 fi
-if [ $(contains "${hubmap_instance_strings}" "${instance}") == 0 ] ; then
-   echo "${instance} is not one of ${hubmap_instance_strings}"
+if [ $(contains "${niddk_instance_strings}" "${instance}") == 0 ] ; then
+   echo "${instance} is not one of ${niddk_instance_strings}"
    exit -1
 fi
 
@@ -47,21 +47,14 @@ source source_platform_file.sh
 
 # Handle setting of environment variables.
 #
-# The goal is to let values from the environment (prefix HUBMAP_) override
-# those from the config files (prefix HM_AF_).  We also check that all
+# The goal is to let values from the environment (prefix NIDDK_) override
+# those from the config files (prefix AF_).  We also check that all
 # required variables are set at some level.
 envvars=( CONFIG HOME \
-	  CONN_INGEST_API_CONNECTION \
-	  CONN_UUID_API_CONNECTION \
-	  CONN_FILES_API_CONNECTION \
-	  CONN_SPATIAL_API_CONNECTION \
-	  CONN_CELLS_API_CONNECTION \
-	  CONN_SEARCH_API_CONNECTION \
-	  CONN_ENTITY_API_CONNECTION \
 	)
 for varname in "${envvars[@]}" ; do
     full_varname="AIRFLOW_${varname}"
-    cfg_varname="HM_AF_${varname}"
+    cfg_varname="AF_${varname}"
     if [[ -z "${!full_varname}" ]] ; then
 	export ${full_varname}=${!cfg_varname}
     fi
@@ -71,20 +64,20 @@ for varname in "${envvars[@]}" ; do
     fi
 done
 
-if [ "${HM_AF_METHOD}" == 'conda' ] ; then
-    which conda || export PATH=/hive/users/hive/anaconda3/bin:$PATH
+if [ "${AF_METHOD}" == 'conda' ] ; then
+    which conda || export PATH=/opt/anaconda3/bin:$PATH
     eval "$(conda shell.bash hook)"
-    conda activate "${HM_AF_ENV_NAME}"
-elif [ "${HM_AF_METHOD}" == 'module_conda' ] ; then
+    conda activate "${AF_ENV_NAME}"
+elif [ "${AF_METHOD}" == 'module_conda' ] ; then
     source /etc/profile.d/modules.sh
     module use /hive/modulefiles
     module load anaconda
     eval "$(conda shell.bash hook)"
-    conda activate "${HM_AF_ENV_NAME}"
-elif [ "${HM_AF_METHOD}" == 'venv' ] ; then
-    source "${HM_AF_ENV_NAME}/bin/activate"
+    conda activate "${AF_ENV_NAME}"
+elif [ "${AF_METHOD}" == 'venv' ] ; then
+    source "${AF_ENV_NAME}/bin/activate"
 else
-    echo "unknown HM_AF_METHOD ${HM_AF_METHOD}"
+    echo "unknown AF_METHOD ${AF_METHOD}"
     exit -1
 fi
 echo 'PATH follows'
@@ -95,5 +88,3 @@ echo 'Environment follows'
 printenv
 
 cd $AIRFLOW_HOME ; \
-env AIRFLOW__HUBMAP_API_PLUGIN__BUILD_NUMBER="$(cat ${top_level_dir}/build_number)" \
-    airflow $*
