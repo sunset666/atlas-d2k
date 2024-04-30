@@ -4,9 +4,6 @@
 [submodule "src/ingest-pipeline/airflow/dags/cwl/salmon-rnaseq"]
 	path = src/ingest-pipeline/airflow/dags/cwl/salmon-rnaseq
 	url = https://github.com/hubmapconsortium/salmon-rnaseq
-[submodule "src/ingest-pipeline/airflow/dags/cwl/sprm"]
-	path = src/ingest-pipeline/airflow/dags/cwl/sprm
-	url = https://github.com/hubmapconsortium/sprm
 [submodule "src/ingest-pipeline/airflow/dags/cwl/azimuth-annotate"]
 	path = src/ingest-pipeline/airflow/dags/cwl/azimuth-annotate
 	url = https://github.com/hubmapconsortium/azimuth-annotate
