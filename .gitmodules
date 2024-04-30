@@ -4,36 +4,15 @@
 [submodule "src/ingest-pipeline/airflow/dags/cwl/salmon-rnaseq"]
 	path = src/ingest-pipeline/airflow/dags/cwl/salmon-rnaseq
 	url = https://github.com/hubmapconsortium/salmon-rnaseq
-[submodule "src/ingest-pipeline/airflow/dags/cwl/sci-atac-seq-pipeline"]
-	path = src/ingest-pipeline/airflow/dags/cwl/sci-atac-seq-pipeline
-	url = https://github.com/hubmapconsortium/sc-atac-seq-pipeline
-[submodule "src/ingest-pipeline/airflow/dags/cwl/bulk-atac-seq"]
-	path = src/ingest-pipeline/airflow/dags/cwl/bulk-atac-seq
-	url = https://github.com/hubmapconsortium/sc-atac-seq-pipeline
-[submodule "src/ingest-pipeline/airflow/dags/cwl/sn-atac-seq-pipeline"]
-	path = src/ingest-pipeline/airflow/dags/cwl/sn-atac-seq-pipeline
-	url = https://github.com/hubmapconsortium/sc-atac-seq-pipeline
 [submodule "src/ingest-pipeline/airflow/dags/cwl/sprm"]
 	path = src/ingest-pipeline/airflow/dags/cwl/sprm
 	url = https://github.com/hubmapconsortium/sprm
-[submodule "src/ingest-pipeline/airflow/dags/cwl/celldive-pipeline"]
-	path = src/ingest-pipeline/airflow/dags/cwl/celldive-pipeline
-	url = https://github.com//hubmapconsortium/celldive-pipeline
 [submodule "src/ingest-pipeline/airflow/dags/cwl/azimuth-annotate"]
 	path = src/ingest-pipeline/airflow/dags/cwl/azimuth-annotate
 	url = https://github.com/hubmapconsortium/azimuth-annotate
-[submodule "src/ingest-pipeline/airflow/dags/cwl/cfde-bdbag"]
-	path = src/ingest-pipeline/airflow/dags/cwl/cfde-bdbag
-	url = https://github.com/hubmapconsortium/cfde-bdbag.git
-[submodule "src/ingest-pipeline/airflow/dags/cwl/pas-ftu-segmentation-pipeline"]
-	path = src/ingest-pipeline/airflow/dags/cwl/pas-ftu-segmentation-pipeline
-	url = https://github.com/hubmapconsortium/pas-ftu-segmentation-pipeline
 [submodule "src/ingest-pipeline/airflow/dags/cwl/create-vis-symlink-archive"]
 	path = src/ingest-pipeline/airflow/dags/cwl/create-vis-symlink-archive
 	url = https://github.com/hubmapconsortium/create-vis-symlink-archive.git
-[submodule "src/ingest-pipeline/airflow/dags/cwl/mibi-pipeline"]
-	path = src/ingest-pipeline/airflow/dags/cwl/mibi-pipeline
-	url = https://github.com/hubmapconsortium/mibi-pipeline
 [submodule "src/ingest-pipeline/airflow/dags/cwl/multiome-rna-atac-pipeline"]
 	path = src/ingest-pipeline/airflow/dags/cwl/multiome-rna-atac-pipeline
 	url = https://github.com/hubmapconsortium/multiome-rna-atac-pipeline
