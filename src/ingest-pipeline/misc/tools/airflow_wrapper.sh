@@ -88,3 +88,5 @@ echo 'Environment follows'
 printenv
 
 cd $AIRFLOW_HOME ; \
+env AIRFLOW__NIDDK_API_PLUGIN__BUILD_NUMBER="$(cat ${top_level_dir}/build_number)" \
+    airflow $*
