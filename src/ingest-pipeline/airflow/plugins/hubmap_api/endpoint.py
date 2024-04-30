@@ -34,20 +34,20 @@ airflow_conf.read(os.path.join(os.environ["AIRFLOW_HOME"], "instance", "app.cfg"
 # Tables of configuration elements needed at start-up.
 # Config elements must be lowercase
 NEEDED_ENV_VARS = [
-    "AIRFLOW_CONN_INGEST_API_CONNECTION",
-    "AIRFLOW_CONN_UUID_API_CONNECTION",
-    "AIRFLOW_CONN_FILES_API_CONNECTION",
-    "AIRFLOW_CONN_SPATIAL_API_CONNECTION",
-    "AIRFLOW_CONN_SEARCH_API_CONNECTION",
-    "AIRFLOW_CONN_ENTITY_API_CONNECTION",
+    # "AIRFLOW_CONN_INGEST_API_CONNECTION",
+    # "AIRFLOW_CONN_UUID_API_CONNECTION",
+    # "AIRFLOW_CONN_FILES_API_CONNECTION",
+    # "AIRFLOW_CONN_SPATIAL_API_CONNECTION",
+    # "AIRFLOW_CONN_SEARCH_API_CONNECTION",
+    # "AIRFLOW_CONN_ENTITY_API_CONNECTION",
 ]
 NEEDED_CONFIG_SECTIONS = [
-    "ingest_map",
+    # "ingest_map",
 ]
 NEEDED_CONFIGS = [
-    ("ingest_map", "scan.and.begin.processing"),
-    ("ingest_map", "validate.upload"),
-    ("hubmap_api_plugin", "build_number"),
+    # ("ingest_map", "scan.and.begin.processing"),
+    # ("ingest_map", "validate.upload"),
+    # ("hubmap_api_plugin", "build_number"),
     ("connections", "app_client_id"),
     ("connections", "app_client_secret"),
     ("connections", "docker_mount_path"),

@@ -6,34 +6,34 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
-from hubmap_operators.common_operators import (
+from niddk_operators.common_operators import (
     CleanupTmpDirOperator,
     CreateTmpDirOperator,
     JoinOperator,
-    LogInfoOperator,
     MoveDataOperator,
-    SetDatasetProcessingOperator,
 )
 
-import utils
 from utils import (
     SequencingDagParameters,
     get_absolute_workflows,
     get_cwltool_base_cmd,
-    get_dataset_uuid,
-    get_parent_dataset_uuids_list,
+    # get_dataset_uuid,
+    # get_parent_dataset_uuids_list,
     get_parent_data_dirs_list,
     build_dataset_name as inner_build_dataset_name,
-    get_previous_revision_uuid,
-    get_uuid_for_error,
+    # get_previous_revision_uuid,
+    # get_uuid_for_error,
     join_quote_command_str,
-    make_send_status_msg_function,
+    # make_send_status_msg_function,
     get_tmp_dir_path,
-    pythonop_get_dataset_state,
+    # pythonop_get_dataset_state,
     HMDAG,
     get_queue_resource,
     get_threads_resource,
     get_preserve_scratch_resource,
+    # get_instance_type,
+    # get_environment_instance,
+    pythonop_maybe_keep,
 )
 
 
@@ -49,7 +49,6 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
         "retry_delay": timedelta(minutes=1),
         "xcom_push": True,
         "queue": get_queue_resource(params.dag_id),
-        "on_failure_callback": utils.create_dataset_state_error_callback(get_uuid_for_error),
     }
 
     with HMDAG(params.dag_id,
@@ -111,19 +110,19 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             print("tmpdir: ", tmpdir)
 
             # get organ type
-            ds_rslt = pythonop_get_dataset_state(
-                dataset_uuid_callable=get_dataset_uuid,
-                **kwargs
-            )
+            # ds_rslt = pythonop_get_dataset_state(
+            #     dataset_uuid_callable=get_dataset_uuid,
+            #     **kwargs
+            # )
 
-            organ_list = list(set(ds_rslt['organs']))
-            organ_code = organ_list[0] if len(organ_list) == 1 else 'multi'
+            # organ_list = list(set(ds_rslt['organs']))
+            # organ_code = organ_list[0] if len(organ_list) == 1 else 'multi'
 
             command = [
                 *get_cwltool_base_cmd(tmpdir),
                 cwl_workflows[1],
-                "--reference",
-                organ_code,
+                # "--reference",
+                # organ_code,
                 "--matrix",
                 "expr.h5ad",
                 "--secondary-analysis-matrix",
@@ -237,7 +236,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
 
         t_maybe_keep_cwl1 = BranchPythonOperator(
             task_id="maybe_keep_cwl1",
-            python_callable=utils.pythonop_maybe_keep,
+            python_callable=pythonop_maybe_keep,
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl2",
@@ -248,7 +247,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
 
         t_maybe_keep_cwl2 = BranchPythonOperator(
             task_id="maybe_keep_cwl2",
-            python_callable=utils.pythonop_maybe_keep,
+            python_callable=pythonop_maybe_keep,
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl3",
@@ -259,7 +258,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
 
         t_maybe_keep_cwl3 = BranchPythonOperator(
             task_id="maybe_keep_cwl3",
-            python_callable=utils.pythonop_maybe_keep,
+            python_callable=pythonop_maybe_keep,
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl4",
@@ -270,7 +269,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
 
         t_maybe_keep_cwl4 = BranchPythonOperator(
             task_id="maybe_keep_cwl4",
-            python_callable=utils.pythonop_maybe_keep,
+            python_callable=pythonop_maybe_keep,
             provide_context=True,
             op_kwargs={
                 "next_op": "move_data",
@@ -279,59 +278,58 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             },
         )
 
-        t_send_create_dataset = PythonOperator(
-            task_id="send_create_dataset",
-            python_callable=utils.pythonop_send_create_dataset,
-            provide_context=True,
-            op_kwargs={
-                "parent_dataset_uuid_callable": get_parent_dataset_uuids_list,
-                "previous_revision_uuid_callable": get_previous_revision_uuid,
-                "http_conn_id": "ingest_api_connection",
-                "dataset_name_callable": build_dataset_name,
-                "pipeline_shorthand": "Salmon"
-            },
-        )
+        # t_send_create_dataset = PythonOperator(
+        #     task_id="send_create_dataset",
+        #     python_callable=pythonop_send_create_dataset,
+        #     provide_context=True,
+        #     op_kwargs={
+        #         "parent_dataset_uuid_callable": get_parent_dataset_uuids_list,
+        #         "previous_revision_uuid_callable": get_previous_revision_uuid,
+        #         "http_conn_id": "ingest_api_connection",
+        #         "dataset_name_callable": build_dataset_name,
+        #         "pipeline_shorthand": "Salmon"
+        #     },
+        # )
+        #
+        # t_set_dataset_error = PythonOperator(
+        #     task_id="set_dataset_error",
+        #     python_callable=pythonop_set_dataset_state,
+        #     provide_context=True,
+        #     trigger_rule="all_done",
+        #     op_kwargs={
+        #         "dataset_uuid_callable": get_dataset_uuid,
+        #         "ds_state": "Error",
+        #         "message": f"An error occurred in {params.pipeline_name}",
+        #     },
+        # )
 
-        t_set_dataset_error = PythonOperator(
-            task_id="set_dataset_error",
-            python_callable=utils.pythonop_set_dataset_state,
-            provide_context=True,
-            trigger_rule="all_done",
-            op_kwargs={
-                "dataset_uuid_callable": get_dataset_uuid,
-                "ds_state": "Error",
-                "message": f"An error occurred in {params.pipeline_name}",
-            },
-        )
+        # send_status_msg = make_send_status_msg_function(
+        #     dag_file=__file__,
+        #     retcode_ops=["pipeline_exec",
+        #                  "pipeline_exec_azimuth_annotate",
+        #                  "move_data",
+        #                  "convert_for_ui",
+        #                  "convert_for_ui_2"],
+        #     cwl_workflows=cwl_workflows,
+        # )
 
-        send_status_msg = make_send_status_msg_function(
-            dag_file=__file__,
-            retcode_ops=["pipeline_exec",
-                         "pipeline_exec_azimuth_annotate",
-                         "move_data",
-                         "convert_for_ui",
-                         "convert_for_ui_2"],
-            cwl_workflows=cwl_workflows,
-        )
+        # t_send_status = PythonOperator(
+        #     task_id="send_status_msg",
+        #     python_callable=send_status_msg,
+        #     provide_context=True,
+        # )
 
-        t_send_status = PythonOperator(
-            task_id="send_status_msg",
-            python_callable=send_status_msg,
-            provide_context=True,
-        )
-
-        t_log_info = LogInfoOperator(task_id="log_info")
         t_join = JoinOperator(task_id="join")
         t_create_tmpdir = CreateTmpDirOperator(task_id="create_tmpdir")
         t_cleanup_tmpdir = CleanupTmpDirOperator(task_id="cleanup_tmpdir")
-        t_set_dataset_processing = SetDatasetProcessingOperator(task_id="set_dataset_processing")
+        # t_set_dataset_processing = SetDatasetProcessingOperator(task_id="set_dataset_processing")
         t_move_data = MoveDataOperator(task_id="move_data")
 
         (
-            t_log_info
-            >> t_create_tmpdir
-            >> t_send_create_dataset
-            >> t_set_dataset_processing
+            # t_log_info
+            t_create_tmpdir
+            # >> t_send_create_dataset
+            # >> t_set_dataset_processing
             >> prepare_cwl1
             >> t_build_cmd1
             >> t_pipeline_exec
@@ -349,14 +347,18 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             >> t_convert_for_ui_2
             >> t_maybe_keep_cwl4
             >> t_move_data
-            >> t_send_status
+            # >> t_send_status
             >> t_join
         )
-        t_maybe_keep_cwl1 >> t_set_dataset_error
-        t_maybe_keep_cwl2 >> t_set_dataset_error
-        t_maybe_keep_cwl3 >> t_set_dataset_error
-        t_maybe_keep_cwl4 >> t_set_dataset_error
-        t_set_dataset_error >> t_join
+        # t_maybe_keep_cwl1 >> t_set_dataset_error
+        # t_maybe_keep_cwl2 >> t_set_dataset_error
+        # t_maybe_keep_cwl3 >> t_set_dataset_error
+        # t_maybe_keep_cwl4 >> t_set_dataset_error
+        # t_set_dataset_error >> t_join
+        t_maybe_keep_cwl1 >> t_join
+        t_maybe_keep_cwl2 >> t_join
+        t_maybe_keep_cwl3 >> t_join
+        t_maybe_keep_cwl4 >> t_join
         t_join >> t_cleanup_tmpdir
 
     return dag
@@ -370,6 +372,7 @@ def get_salmon_dag_params(assay: str) -> SequencingDagParameters:
         pipeline_name=f"salmon-rnaseq-{assay}",
         assay=assay,
     )
+
 
 salmon_dag_params: List[SequencingDagParameters] = [
     # 10X is special because it was first; no "10x" label in the pipeline name
