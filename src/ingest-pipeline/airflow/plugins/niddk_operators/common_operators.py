@@ -65,15 +65,15 @@ class CleanupTmpDirOperator(BashOperator):
             )
 
 
-class SetDatasetProcessingOperator(PythonOperator):
-    # @apply_defaults
-    def __init__(self, **kwargs):
-        super().__init__(python_callable=pythonop_set_dataset_state, 
-                         provide_context=True,
-                         op_kwargs={
-                             'dataset_uuid_callable': get_dataset_uuid,
-                         },
-                         **kwargs)
+# class SetDatasetProcessingOperator(PythonOperator):
+#     # @apply_defaults
+#     def __init__(self, **kwargs):
+#         super().__init__(python_callable=pythonop_set_dataset_state,
+#                          provide_context=True,
+#                          op_kwargs={
+#                              'dataset_uuid_callable': get_dataset_uuid,
+#                          },
+#                          **kwargs)
     
 
 class MoveDataOperator(BashOperator):

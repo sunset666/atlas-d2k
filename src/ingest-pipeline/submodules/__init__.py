@@ -3,13 +3,13 @@ import os
 from importlib import import_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
-                             'ingest-validation-tools', 'src'))
+                             'atlas-d2k-py', 'atlas_d2k'))
 
 
-ingest_validation_tools_upload = import_module('ingest_validation_tools.upload')
+atlasd2k_prepare_replicate = import_module('pipelines.scRNASeq.prepare_replicate')
 
 
-__all__ = ["ingest_validation_tools_upload",
+__all__ = ["atlasd2k_prepare_replicate",
            ]
 
 sys.path.pop()

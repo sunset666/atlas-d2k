@@ -13,3 +13,6 @@
 [submodule "src/ingest-pipeline/airflow/dags/cwl/multiome-rna-atac-pipeline"]
 	path = src/ingest-pipeline/airflow/dags/cwl/multiome-rna-atac-pipeline
 	url = https://github.com/hubmapconsortium/multiome-rna-atac-pipeline
+[submodule "src/ingest-pipeline/submodules/atlas-d2k-py"]
+	path = src/ingest-pipeline/submodules/atlas-d2k-py
+	url = https://github.com/informatics-isi-edu/atlas-d2k-py.git
