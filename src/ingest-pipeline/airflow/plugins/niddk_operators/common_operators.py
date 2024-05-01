@@ -4,21 +4,21 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator as DummyOperator
 from airflow.operators.python import PythonOperator
 
-from utils import (
-    get_dataset_uuid,
-    pythonop_set_dataset_state,
-    pythonop_trigger_target,
-)
+# from utils import (
+#     get_dataset_uuid,
+#     pythonop_set_dataset_state,
+#     pythonop_trigger_target,
+# )
 
 
-class LogInfoOperator(PythonOperator):
-    # @apply_defaults
-    def __init__(self, **kwargs):
-        # print('kwargs follow')
-        # pprint(kwargs)
-        super().__init__(python_callable=pythonop_trigger_target,
-                         provide_context=True,
-                         **kwargs)
+# class LogInfoOperator(PythonOperator):
+#     # @apply_defaults
+#     def __init__(self, **kwargs):
+#         # print('kwargs follow')
+#         # pprint(kwargs)
+#         super().__init__(python_callable=pythonop_trigger_target,
+#                          provide_context=True,
+#                          **kwargs)
     
 
 class JoinOperator(DummyOperator):
