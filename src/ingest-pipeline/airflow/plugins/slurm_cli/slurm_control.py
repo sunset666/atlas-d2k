@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union, Dict
-import jobs
+from slurm_cli import jobs
 from subprocess import run as __run_process
 
 __SQUEUE_PATH = "squeue"
