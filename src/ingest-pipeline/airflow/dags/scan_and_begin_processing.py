@@ -20,7 +20,7 @@ from airflow.exceptions import AirflowException
 from airflow.operators.python import PythonOperator
 
 sys.path.append(airflow_conf.as_dict()["connections"]["SRC_PATH"].strip("'").strip('"'))
-# from submodules import atlasd2k_prepare_replicate
+from submodules import atlasd2k_prepare_replicate
 
 
 sys.path.pop()
@@ -53,8 +53,7 @@ with HMDAG(
 
     def download_replicate(**kwargs):
         try:
-            # replicate = atlasd2k_prepare_replicate(server_name="", args={"replicate": kwargs["replicate"]})
-            pass
+            replicate = atlasd2k_prepare_replicate(server_name="", args={"replicate": kwargs["replicate"]})
         except Exception as e:
             raise AirflowException(e)
 
