@@ -1,14 +1,8 @@
 #! /usr/bin/env python
 
-# from pprint import pprint
-
-# from airflow.operators.bash_operator import BashOperator
 from airflow.operators.bash import BashOperator
-# from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.dummy import DummyOperator
-# from airflow.operators.python_operator import PythonOperator
+from airflow.operators.empty import EmptyOperator as DummyOperator
 from airflow.operators.python import PythonOperator
-# from airflow.utils.decorators import apply_defaults
 
 from utils import (
     get_dataset_uuid,

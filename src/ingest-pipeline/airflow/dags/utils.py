@@ -32,8 +32,8 @@ from typing import (
 import cwltool  # used to find its path
 import yaml
 from cryptography.fernet import Fernet
-from hubmap_commons.schema_tools import assert_json_matches_schema, set_schema_base_path
-from hubmap_commons.type_client import TypeClient
+# from hubmap_commons.schema_tools import assert_json_matches_schema, set_schema_base_path
+# from hubmap_commons.type_client import TypeClient
 from requests import codes
 from requests.exceptions import HTTPError
 from status_change.status_manager import StatusChanger, StatusChangerException
@@ -119,7 +119,7 @@ RESOURCE_MAP_FILENAME = "resource_map.yml"  # Expected to be found in this same 
 RESOURCE_MAP_SCHEMA = "resource_map_schema.yml"
 COMPILED_RESOURCE_MAP: Optional[List[Tuple[Pattern, int, Dict[str, Any]]]] = None
 
-TYPE_CLIENT: Optional[TypeClient] = None
+# TYPE_CLIENT: Optional[TypeClient] = None
 
 # Parameters used to generate scRNA and scATAC analysis DAGs; these
 # are the only fields which differ between assays and DAGs

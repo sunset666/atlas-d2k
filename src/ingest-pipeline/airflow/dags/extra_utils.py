@@ -1,11 +1,19 @@
 import json
+import os
+import jsonref
 from typing import List, Dict
 from pathlib import Path
 from csv import DictReader
+from urllib import parse as urlparse
+from os.path import join, dirname, realpath
+from jsonschema import SchemaError, validate, ValidationError
 
 from airflow.providers.http.hooks.http import HttpHook
 from pprint import pprint
 from typing import Tuple
+
+_SCHEMA_BASE_PATH = join(dirname(dirname(dirname(realpath(__file__)))), "schemata")
+_SCHEMA_BASE_URI = "http://schemata.hubmapconsortium.org/"
 
 
 def check_link_published_drvs(uuid: str, auth_tok: str) -> Tuple[bool, str]:
@@ -128,3 +136,88 @@ class SoftAssayClient:
         except UnicodeDecodeError as e:
             message = {"Decode Error": self.__get_context_of_decode_error(e)}
         raise message
+
+
+def set_schema_base_path(base_path: str, base_uri: str):
+    if base_path:
+        global _SCHEMA_BASE_PATH
+        _SCHEMA_BASE_PATH = os.path.abspath(base_path)
+
+    if base_uri:
+        global _SCHEMA_BASE_URI
+        _SCHEMA_BASE_URI = base_uri
+
+
+class LocalJsonLoader(jsonref.JsonLoader):
+    def __init__(self, schema_root_dir, **kwargs):
+        super(LocalJsonLoader, self).__init__(**kwargs)
+        self.schema_root_dir = schema_root_dir
+        self.schema_root_uri = None  # the name by which the root doc knows itself
+
+    def patch_uri(self, uri):
+        suri = urlparse.urlsplit(uri)
+        if self.schema_root_uri is not None:
+            root_suri = urlparse.urlsplit(self.schema_root_uri)
+            if suri.scheme == root_suri.scheme and suri.netloc == root_suri.netloc:
+                # This file is actually local
+                suri = suri._replace(scheme='file', netloc='')
+        if suri.scheme == 'file' and not suri.path.startswith(self.schema_root_dir):
+            assert suri.path[0] == '/', 'problem parsing path component of a file uri'
+            puri = urlparse.urlunsplit((suri.scheme, suri.netloc,
+                                        join(self.schema_root_dir, suri.path[1:]),
+                                        suri.query, suri.fragment))
+        else:
+            puri = urlparse.urlunsplit(suri)
+        return puri
+
+    def __call__(self, uri, **kwargs):
+        rslt = super(LocalJsonLoader, self).__call__(uri, **kwargs)
+        if self.schema_root_uri is None and '$id' in rslt:
+            self.schema_root_uri = rslt['$id']
+            if uri in self.store:
+                self.store[self.schema_root_uri] = self.store[uri]
+        return rslt
+
+
+
+def _load_json_schema(filename):
+    """
+    Loads the schema file of the given name.
+
+    The filename is relative to the root schema directory.
+    JSON and YAML formats are supported.
+    """
+    check_schema_base_path()
+    loader = LocalJsonLoader(_SCHEMA_BASE_PATH)
+    src_uri = 'file:///{}'.format(filename)
+    base_uri = '{}{}'.format(_SCHEMA_BASE_URI, filename)
+    return jsonref.load_uri(src_uri, base_uri=base_uri, loader=loader,
+                            jsonschema=True, load_on_repr=False)
+
+
+def check_schema_base_path():
+    if not _SCHEMA_BASE_PATH:
+        raise SchemaError("Make sure to first set _SCHEMA_BASE_PATH (base_path) to the location of the json/yaml "
+                          "file to process.")
+
+    if not _SCHEMA_BASE_URI:
+        raise SchemaError("Make sure to first set _SCHEMA_BASE_URI (base_uri) to the location of the json/yaml "
+                          "file to process, and _SCHEMA_BASE_URI to the corresponding URI.")
+
+
+def assert_json_matches_schema(jsondata, schema_filename: str, base_path: str = "", base_uri: str = ""):
+    """
+    raises AssertionError if the schema in schema_filename
+    is invalid, or if the given jsondata does not match the schema.
+    """
+    set_schema_base_path(base_path=base_path, base_uri=base_uri)
+
+    schema = _load_json_schema(schema_filename)
+    try:
+        validate(instance=jsondata, schema=schema)
+    except SchemaError as e:
+        raise AssertionError('{} is an invalid schema: {}'.format(schema_filename, e))
+    except ValidationError as e:
+        raise AssertionError('json does not match {}: {}'.format(schema_filename, e))
+    else:
+        return True
