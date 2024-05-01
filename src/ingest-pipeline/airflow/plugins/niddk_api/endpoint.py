@@ -21,9 +21,7 @@ from airflow.models import DagBag, DagRun
 from airflow.api.common.trigger_dag import trigger_dag
 from airflow.configuration import conf as airflow_conf
 
-from hubmap_api.manager import blueprint as api_bp
-
-from hubmap_commons.hm_auth import AuthHelper, secured
+from niddk_api.manager import blueprint as api_bp
 
 API_VERSION = 4
 
@@ -42,12 +40,11 @@ NEEDED_ENV_VARS = [
     # "AIRFLOW_CONN_ENTITY_API_CONNECTION",
 ]
 NEEDED_CONFIG_SECTIONS = [
-    # "ingest_map",
+    "ingest_map",
 ]
 NEEDED_CONFIGS = [
-    # ("ingest_map", "scan.and.begin.processing"),
-    # ("ingest_map", "validate.upload"),
-    # ("hubmap_api_plugin", "build_number"),
+    ("ingest_map", "scan.and.begin.processing"),
+    ("hubmap_api_plugin", "build_number"),
     ("connections", "app_client_id"),
     ("connections", "app_client_secret"),
     ("connections", "docker_mount_path"),
@@ -100,16 +97,6 @@ def config(section, key):
         return rslt
     else:
         raise AirflowConfigException("No config section [{}]".format(section))
-
-
-AUTH_HELPER = None
-if not AuthHelper.isInitialized():
-    AUTH_HELPER = AuthHelper.create(
-        clientId=config("connections", "app_client_id"),
-        clientSecret=config("connections", "app_client_secret"),
-    )
-else:
-    AUTH_HELPER = AuthHelper.instance()
 
 
 class HubmapApiInputException(Exception):
@@ -167,7 +154,6 @@ class HubmapApiResponse:
 
 
 @api_bp.route("/test")
-@secured(groups="HuBMAP-read")
 def api_test():
     token = None
     client_id = config("connections", "app_client_id")
