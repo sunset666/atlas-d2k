@@ -44,7 +44,7 @@ NEEDED_CONFIG_SECTIONS = [
 ]
 NEEDED_CONFIGS = [
     ("ingest_map", "scan.and.begin.processing"),
-    ("hubmap_api_plugin", "build_number"),
+    ("niddk_api_plugin", "build_number"),
     ("connections", "app_client_id"),
     ("connections", "app_client_secret"),
     ("connections", "docker_mount_path"),
