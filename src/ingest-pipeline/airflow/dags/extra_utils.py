@@ -1,16 +1,22 @@
 import json
 import os
 import jsonref
-from typing import List, Dict
+import requests
+from typing import List, Dict, Any, Union
 from pathlib import Path
 from csv import DictReader
 from urllib import parse as urlparse
 from os.path import join, dirname, realpath
 from jsonschema import SchemaError, validate, ValidationError
+from requests.exceptions import TooManyRedirects
 
 from airflow.providers.http.hooks.http import HttpHook
 from pprint import pprint
 from typing import Tuple
+
+
+JSONType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
+StringOrNone = Union[str, None]
 
 _SCHEMA_BASE_PATH = join(dirname(dirname(dirname(realpath(__file__)))), "schemata")
 _SCHEMA_BASE_URI = "http://schemata.hubmapconsortium.org/"
@@ -136,6 +142,85 @@ class SoftAssayClient:
         except UnicodeDecodeError as e:
             message = {"Decode Error": self.__get_context_of_decode_error(e)}
         raise message
+
+
+class SingletonMetaClass(type):
+    """
+    Thanks again to stackoverflow, this is a Singleton metaclass for Python.
+
+    http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+
+    Note that 'self' in this case should properly be 'cls' since it is a class,
+    but the syntax checker doesn't like that.
+    """
+    _instances: Dict[type, type] = {}
+
+    # syntax checker cannot handle metaclasses, so 'self' rather than 'cls'
+    def __call__(self, *args, **kwargs) -> type:
+        if self not in self._instances:
+            self._instances[self] = (super(SingletonMetaClass, self)
+                                     .__call__(*args, **kwargs))
+        return self._instances[self]
+
+
+class TypeClient(object, metaclass=SingletonMetaClass):
+    """
+    This is a singleton- only a single instance of this class is ever created.
+    If the constructor is called again, it returns the same instance as before.
+    This is for convenience in initializing the service.
+    """
+    app_config: Dict[str, Any]
+
+    def __init__(self, type_webservice_url: StringOrNone = None):
+        """
+        type_webservice_url must be provided the first time the constructor is
+        called.  Thereafter, all calls return the same instance and are already
+        initialized with that service URL.
+        """
+        if type_webservice_url is None:
+            if not (hasattr(self, 'app_config')
+                    and 'TYPE_WEBSERVICE_URL' in self.app_config):
+                raise RuntimeError('TypeClient has not been initialized')
+        else:
+            self.app_config = {}
+            if not type_webservice_url.endswith('/'):
+                type_webservice_url += '/'  # Avoid a common config problem
+            self.app_config['TYPE_WEBSERVICE_URL'] = type_webservice_url
+
+    def _wrapped_transaction(self, url, data=None, method="GET") -> JSONType:
+        """
+        Provide error and exception handling for requests.
+        """
+        try:
+            if method == "GET":
+                assert data is None, "No message body for GET transactions"
+                r = requests.get(url,
+                                 headers={'Content-Type': 'application/json'})
+            elif method == "POST":
+                r = requests.post(url,
+                                  headers={'Content-Type': 'application/json'},
+                                  json=data)
+            else:
+                raise RuntimeError("Unsupported transaction type")
+            if r.ok is True:
+                return json.loads(r.content.decode())
+            else:
+                msg = ('HTTP Response: ' + str(r.status_code) + ' msg: '
+                       + str(r.text))
+                raise Exception(msg)
+        except ConnectionError as connerr:
+            # "connerr"...get it? like "ConAir"... chb69
+            pprint(connerr)
+            raise connerr
+        except TimeoutError as toerr:
+            pprint(toerr)
+            raise toerr
+        except TooManyRedirects as toomany:
+            pprint(toomany)
+            raise toomany
+        except Exception as e:
+            pprint(e)
+            raise e
 
 
 def set_schema_base_path(base_path: str, base_uri: str):

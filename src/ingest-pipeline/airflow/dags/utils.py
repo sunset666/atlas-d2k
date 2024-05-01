@@ -34,6 +34,7 @@ import yaml
 from cryptography.fernet import Fernet
 # from hubmap_commons.schema_tools import assert_json_matches_schema, set_schema_base_path
 # from hubmap_commons.type_client import TypeClient
+from extra_utils import set_schema_base_path, assert_json_matches_schema
 from requests import codes
 from requests.exceptions import HTTPError
 from status_change.status_manager import StatusChanger, StatusChangerException
