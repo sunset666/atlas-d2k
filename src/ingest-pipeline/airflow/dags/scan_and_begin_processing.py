@@ -2,6 +2,7 @@ import sys
 from datetime import datetime, timedelta
 from pprint import pprint
 
+from airflow.operators.bash import BashOperator
 from niddk_operators.common_operators import (
     CleanupTmpDirOperator,
     CreateTmpDirOperator,
@@ -16,11 +17,11 @@ from utils import (
     get_queue_resource,
 )
 from airflow.configuration import conf as airflow_conf
-from airflow.exceptions import AirflowException
-from airflow.operators.python import PythonOperator
+# from airflow.exceptions import AirflowException
+# from airflow.operators.python import PythonOperator
 
 sys.path.append(airflow_conf.as_dict()["connections"]["SRC_PATH"].strip("'").strip('"'))
-from submodules import atlasd2k_prepare_replicate
+# from submodules import atlasd2k_prepare_replicate
 
 
 sys.path.pop()
@@ -51,18 +52,27 @@ with HMDAG(
         },
 ) as dag:
 
-    def download_replicate(**kwargs):
-        try:
-            replicate = atlasd2k_prepare_replicate(server_name="", args={"replicate": kwargs["replicate"]})
-        except Exception as e:
-            raise AirflowException(e)
+    # def download_replicate(**kwargs):
+    #     try:
+    #         replicate = atlasd2k_prepare_replicate(server_name="", args={"replicate": kwargs["replicate"]})
+    #     except Exception as e:
+    #         raise AirflowException(e)
+    #
+    #
+    # t_download_replicate = PythonOperator(
+    #     task_id="download_replicate",
+    #     python_callable=download_replicate,
+    #     provide_context=True,
+    #     op_kwargs={},
+    # )
 
-
-    t_download_replicate = PythonOperator(
+    t_download_replicate = BashOperator(
         task_id="download_replicate",
-        python_callable=download_replicate,
-        provide_context=True,
-        op_kwargs={},
+        bash_command="src_dir={{dag_run.conf.atlas_d2k_path}}; \
+                     deriva-download-cli --catalog 2 www.atlas-d2k.org \
+                     {{src_dir}}/Replicate_Input_Bag.json \
+                     {{tmp_dir_path(run_id)}} \
+                     rid={{dag_run.conf.submission_id}}",
     )
 
     t_create_tmpdir = CreateTmpDirOperator(task_id="create_temp_dir")
@@ -78,7 +88,7 @@ with HMDAG(
         print("dag_run conf:")
         ctx = kwargs["dag_run"].conf
         pprint(ctx)
-        download_replcate_retcode = int(kwargs["ti"].xcom_pull(task_ids="dowload_replciate"))
+        download_replcate_retcode = int(kwargs["ti"].xcom_pull(task_ids="download_replicate"))
         if download_replcate_retcode == 0:
             payload = {
                 "ingest_id": ctx["run_id"],

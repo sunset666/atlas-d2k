@@ -205,7 +205,7 @@ def _get_required_string(data, st):
         raise HubmapApiInputException(st)
 
 
-def check_ingest_parms(provider, submission_id, process, full_path):
+def check_ingest_parms(process):
     """
     This routine performs consistency checks on the parameters of an ingest request.
     On error, HubmapApiInputException is raised.
@@ -224,34 +224,6 @@ def check_ingest_parms(provider, submission_id, process, full_path):
         except IOError as e:
             LOGGER.error("mock data load failed: {}".format(e))
             raise HubmapApiInputException("No mock data found for process %s", process)
-    else:
-        # dct = {"provider": provider, "submission_id": submission_id, "process": process}
-        base_path = config("connections", "docker_mount_path")
-        if os.path.commonprefix([full_path, base_path]) != base_path:
-            LOGGER.error(
-                "Ingest directory {} is not a subdirectory of DOCKER_MOUNT_PATH".format(full_path)
-            )
-            raise HubmapApiInputException(
-                "Ingest directory is not a subdirectory of DOCKER_MOUNT_PATH"
-            )
-        if os.path.exists(full_path) and os.path.isdir(full_path):
-            try:
-                num_files = len(os.listdir(full_path))
-            except PermissionError as e:
-                LOGGER.error("Permission error on ingest directory {}".format(full_path))
-                raise HubmapApiInputException(str(e))
-            if not num_files:
-                LOGGER.error("Ingest directory {} contains no files".format(full_path))
-                raise HubmapApiInputException("Ingest directory contains no files")
-        else:
-            LOGGER.error(
-                "cannot find the ingest data for '%s' '%s' '%s' (expected %s)"
-                % (provider, submission_id, process, full_path)
-            )
-            raise HubmapApiInputException(
-                "Cannot find the expected ingest directory for '%s' '%s' '%s'"
-                % (provider, submission_id, process)
-            )
 
 
 def _auth_tok_from_request():
@@ -303,10 +275,8 @@ def request_ingest():
     LOGGER.debug("request_ingest data: {}".format(str(data)))
     # Test and extract required parameters
     try:
-        provider = _get_required_string(data, "provider")
         submission_id = _get_required_string(data, "submission_id")
         process = _get_required_string(data, "process")
-        full_path = _get_required_string(data, "full_path")
     except HubmapApiInputException as e:
         return HubmapApiResponse.bad_request(
             "Must specify {} to request data be ingested".format(str(e))
@@ -322,7 +292,7 @@ def request_ingest():
         return HubmapApiResponse.bad_request("{} is not a known ingestion process".format(process))
 
     try:
-        check_ingest_parms(provider, submission_id, process, full_path)
+        check_ingest_parms(process)
 
         session = settings.Session()
 
@@ -337,7 +307,6 @@ def request_ingest():
         crypt_auth_tok = fernet.encrypt(auth_tok.encode()).decode()
 
         conf = {
-            "provider": provider,
             "submission_id": submission_id,
             "process": process,
             "dag_id": dag_id,
@@ -345,7 +314,6 @@ def request_ingest():
             "ingest_id": ingest_id,
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
-            "lz_path": full_path,
         }
 
         if find_dag_runs(session, dag_id, run_id, execution_date):
@@ -490,6 +458,8 @@ def generic_invoke_dag_on_uuid(uuid, process_name):
             "run_id": run_id,
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
+            "atlas_d2k_path": config("connections", "src_path") +
+                              "/submodules/atlas_d2k/pipelines/scRNASeq/config",
             "uuid": uuid,
         }
 
