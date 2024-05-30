@@ -6,4 +6,4 @@ jsonref==0.3.0
 git+https://github.com/hubmapconsortium/cwltool.git@docker-gpu#egg=cwltool
 jsonschema==4.22.0
 deriva==1.7.0
-airflow-slurm-plugin
+airflow-slurm-executor==0.0.4
