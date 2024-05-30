@@ -17,6 +17,7 @@ from jinja2 import TemplateNotFound
 
 LOGGER = logging.getLogger(__name__)
 
+
 def map_to_list(map):
     lst = []
     for elt in map.iter_rules():
@@ -141,8 +142,8 @@ aav6_package = {'category': 'NIDDK API',
 
 # Create a Flask blueprint to hold the NIDDK API
 blueprint = Blueprint(
-    "hubmap_api", __name__,
-    url_prefix='/api/hubmap',
+    "niddk_api", __name__,
+    url_prefix='/api/niddk',
     template_folder='templates',
     static_folder='static',
 )

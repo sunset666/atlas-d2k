@@ -99,15 +99,15 @@ def config(section, key):
         raise AirflowConfigException("No config section [{}]".format(section))
 
 
-class HubmapApiInputException(Exception):
+class NIDDKApiInputException(Exception):
     pass
 
 
-class HubmapApiConfigException(Exception):
+class NIDDKApiConfigException(Exception):
     pass
 
 
-class HubmapApiResponse:
+class NIDDKApiResponse:
     def __init__(self):
         pass
 
@@ -125,32 +125,32 @@ class HubmapApiResponse:
 
     @staticmethod
     def success(payload):
-        return HubmapApiResponse.standard_response(HubmapApiResponse.STATUS_OK, payload)
+        return NIDDKApiResponse.standard_response(NIDDKApiResponse.STATUS_OK, payload)
 
     @staticmethod
     def error(status, error):
-        return HubmapApiResponse.standard_response(status, {"error": error})
+        return NIDDKApiResponse.standard_response(status, {"error": error})
 
     @staticmethod
     def bad_request(error):
-        return HubmapApiResponse.error(HubmapApiResponse.STATUS_BAD_REQUEST, error)
+        return NIDDKApiResponse.error(NIDDKApiResponse.STATUS_BAD_REQUEST, error)
 
     @staticmethod
     def bad_request_bulk(error, success):
-        return HubmapApiResponse.standard_response(HubmapApiResponse.STATUS_BAD_REQUEST, {"error": error,
+        return NIDDKApiResponse.standard_response(NIDDKApiResponse.STATUS_BAD_REQUEST, {"error": error,
                                                                                           "success": success})
 
     @staticmethod
     def not_found(error="Resource not found"):
-        return HubmapApiResponse.error(HubmapApiResponse.STATUS_NOT_FOUND, error)
+        return NIDDKApiResponse.error(NIDDKApiResponse.STATUS_NOT_FOUND, error)
 
     @staticmethod
     def unauthorized(error="Not authorized to access this resource"):
-        return HubmapApiResponse.error(HubmapApiResponse.STATUS_UNAUTHORIZED, error)
+        return NIDDKApiResponse.error(NIDDKApiResponse.STATUS_UNAUTHORIZED, error)
 
     @staticmethod
     def server_error(error="An unexpected problem occurred"):
-        return HubmapApiResponse.error(HubmapApiResponse.STATUS_SERVER_ERROR, error)
+        return NIDDKApiResponse.error(NIDDKApiResponse.STATUS_SERVER_ERROR, error)
 
 
 @api_bp.route("/test")
@@ -165,12 +165,12 @@ def api_test():
     elif "AUTHORIZATION" in request.headers:
         token = str(request.headers["AUTHORIZATION"])[7:]
     print("Token: " + token)
-    return HubmapApiResponse.success({"api_is_alive": True})
+    return NIDDKApiResponse.success({"api_is_alive": True})
 
 
 @api_bp.route("/version")
 def api_version():
-    return HubmapApiResponse.success(
+    return NIDDKApiResponse.success(
         {"api": API_VERSION, "build": config("hubmap_api_plugin", "build_number")}
     )
 
@@ -197,18 +197,18 @@ def find_dag_runs(session, dag_id, dag_run_id, execution_date):
 
 def _get_required_string(data, st):
     """
-    Return data[st] if present and a valid string; otherwise raise HubmapApiInputException
+    Return data[st] if present and a valid string; otherwise raise NIDDKApiInputException
     """
     if st in data and data[st] is not None:
         return data[st]
     else:
-        raise HubmapApiInputException(st)
+        raise NIDDKApiInputException(st)
 
 
 def check_ingest_parms(process):
     """
     This routine performs consistency checks on the parameters of an ingest request.
-    On error, HubmapApiInputException is raised.
+    On error, NIDDKApiInputException is raised.
     Return value is None.
     """
     if process.startswith("mock."):
@@ -220,10 +220,10 @@ def check_ingest_parms(process):
                 mock_data = yaml.safe_load(f)
         except yaml.YAMLError as e:
             LOGGER.error("mock data contains invalid YAML: {}".format(e))
-            raise HubmapApiInputException("Mock data is invalid YAML for process %s", process)
+            raise NIDDKApiInputException("Mock data is invalid YAML for process %s", process)
         except IOError as e:
             LOGGER.error("mock data load failed: {}".format(e))
-            raise HubmapApiInputException("No mock data found for process %s", process)
+            raise NIDDKApiInputException("No mock data found for process %s", process)
 
 
 def _auth_tok_from_request():
@@ -277,8 +277,8 @@ def request_ingest():
     try:
         submission_id = _get_required_string(data, "submission_id")
         process = _get_required_string(data, "process")
-    except HubmapApiInputException as e:
-        return HubmapApiResponse.bad_request(
+    except NIDDKApiInputException as e:
+        return NIDDKApiResponse.bad_request(
             "Must specify {} to request data be ingested".format(str(e))
         )
 
@@ -289,7 +289,7 @@ def request_ingest():
     try:
         dag_id = config("ingest_map", process)
     except AirflowConfigException:
-        return HubmapApiResponse.bad_request("{} is not a known ingestion process".format(process))
+        return NIDDKApiResponse.bad_request("{} is not a known ingestion process".format(process))
 
     try:
         check_ingest_parms(process)
@@ -327,16 +327,16 @@ def request_ingest():
             raise AirflowException("Attempt to trigger run produced an error: {}".format(err))
         LOGGER.info("dagrun follows: {}".format(dr))
         session.close()
-    except HubmapApiInputException as e:
-        return HubmapApiResponse.bad_request(str(e))
+    except NIDDKApiInputException as e:
+        return NIDDKApiResponse.bad_request(str(e))
     except ValueError as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
     except AirflowException as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
     except Exception as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
 
-    return HubmapApiResponse.success({"ingest_id": ingest_id, "run_id": run_id})
+    return NIDDKApiResponse.success({"ingest_id": ingest_id, "run_id": run_id})
 
 
 @csrf.exempt
@@ -359,7 +359,7 @@ def request_bulk_ingest():
             submission_id = _get_required_string(item, "submission_id")
             process = _get_required_string(item, "process")
             full_path = _get_required_string(item, "full_path")
-        except HubmapApiInputException as e:
+        except NIDDKApiInputException as e:
             error_msgs.append({"message": "Must specify {} to request data be ingested".format(str(e)),
                                "submission_id": "not_found"})
             continue
@@ -419,7 +419,7 @@ def request_bulk_ingest():
             success_msgs.append({"ingest_id": ingest_id, "run_id": run_id, "submission_id": submission_id})
             LOGGER.info("dagrun follows: {}".format(dr))
             session.close()
-        except HubmapApiInputException as e:
+        except NIDDKApiInputException as e:
             error_msgs.append({"message": str(e), "submission_id": submission_id})
         except ValueError as e:
             error_msgs.append({"message": str(e), "submission_id": submission_id})
@@ -429,10 +429,10 @@ def request_bulk_ingest():
             error_msgs.append({"message": str(e), "submission_id": submission_id})
 
     if error_msgs:
-        return HubmapApiResponse.bad_request_bulk(error_msgs, success_msgs)
+        return NIDDKApiResponse.bad_request_bulk(error_msgs, success_msgs)
     if success_msgs:
-        return HubmapApiResponse.success(success_msgs)
-    return HubmapApiResponse.bad_request("Nothing to ingest")
+        return NIDDKApiResponse.success(success_msgs)
+    return NIDDKApiResponse.bad_request("Nothing to ingest")
 
 
 def generic_invoke_dag_on_uuid(uuid, process_name):
@@ -475,20 +475,20 @@ def generic_invoke_dag_on_uuid(uuid, process_name):
         LOGGER.info("dagrun follows: {}".format(dr))
 
         session.close()
-    except HubmapApiConfigException:
-        return HubmapApiResponse.bad_request(f"{process} does not map to a known DAG")
-    except HubmapApiInputException as e:
-        return HubmapApiResponse.bad_request(str(e))
+    except NIDDKApiConfigException:
+        return NIDDKApiResponse.bad_request(f"{process} does not map to a known DAG")
+    except NIDDKApiInputException as e:
+        return NIDDKApiResponse.bad_request(str(e))
     except ValueError as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
     except KeyError as e:
-        HubmapApiResponse.not_found(f"{e}")
+        NIDDKApiResponse.not_found(f"{e}")
     except AirflowException as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
     except Exception as e:
-        return HubmapApiResponse.server_error(str(e))
+        return NIDDKApiResponse.server_error(str(e))
 
-    return HubmapApiResponse.success({"run_id": run_id})
+    return NIDDKApiResponse.success({"run_id": run_id})
 
 
 @csrf.exempt
@@ -520,4 +520,4 @@ process_strings  list of strings  The list of valid 'process' strings
 def get_process_strings():
     dct = airflow_conf.as_dict()
     psl = [s.upper() for s in dct["ingest_map"]] if "ingest_map" in dct else []
-    return HubmapApiResponse.success({"process_strings": psl})
+    return NIDDKApiResponse.success({"process_strings": psl})
