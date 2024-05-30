@@ -33,8 +33,6 @@ function get_dir_of_this_script () {
 get_dir_of_this_script  # sets $DIR
 cd $DIR
 
-source source_platform_file.sh
-
 echo $AF_METHOD $AF_ENV_NAME
 if [ "${AF_METHOD}" == 'conda' ] ; then
     which conda || export PATH=/opt/anaconda3/bin:$PATH

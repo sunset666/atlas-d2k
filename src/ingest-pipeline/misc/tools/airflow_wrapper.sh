@@ -42,9 +42,6 @@ get_dir_of_this_script
 cd "$DIR"
 top_level_dir="$(git rev-parse --show-toplevel)"
 
-# establish OS context
-source source_platform_file.sh
-
 # Handle setting of environment variables.
 #
 # The goal is to let values from the environment (prefix NIDDK_) override
