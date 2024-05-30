@@ -15,7 +15,7 @@ fi
 python_version="$NIDDK_PYTHON_VERSION"
 
 # Root directory for newly created conda environments
-conda_env_root="/opt/environments"
+conda_env_root="/opt/environments-niddk"
 
 function get_dir_of_this_script () {
     # This function sets DIR to the directory in which this script itself is found.
