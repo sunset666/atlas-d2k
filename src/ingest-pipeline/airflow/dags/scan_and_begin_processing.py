@@ -70,10 +70,12 @@ with HMDAG(
     t_download_replicate = BashOperator(
         task_id="download_replicate",
         bash_command="src_dir={{dag_run.conf.atlas_d2k_path}}; \
-                     deriva-download-cli --catalog 2 www.atlas-d2k.org \
-                     $src_dir/Replicate_Input_Bag.json \
-                     {{tmp_dir_path(run_id)}} \
-                     rid={{dag_run.conf.submission_id}}",
+                      tmp_dir={{tmp_dir_path(run_id}}; \
+                      deriva-download-cli --catalog 2 www.atlas-d2k.org \
+                      $src_dir/Replicate_Input_Bag.json \
+                      $tmp_dir \
+                      rid={{dag_run.conf.submission_id}} > $tmp_dir/session.log 2>&1 ; \
+                      echo $?",
     )
 
     t_create_tmpdir = CreateTmpDirOperator(task_id="create_temp_dir")
