@@ -42,7 +42,7 @@ get_dir_of_this_script
 cd "$DIR"
 top_level_dir="$(git rev-parse --show-toplevel)"
 
-ENV_SCRIPT="/airflow_environments/env_${HUBMAP_INSTANCE}.sh"
+ENV_SCRIPT="/airflow_environments/env_${NIDDK_INSTANCE}.sh"
 
 . "$(dirname "$(readlink -f "$0")")${ENV_SCRIPT}"
 
