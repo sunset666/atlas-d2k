@@ -314,7 +314,7 @@ def request_ingest():
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
             "atlas_d2k_path": config("connections", "src_path") +
-                              "/submodules/atlas_d2k/pipelines/scRNASeq/config",
+                              "/submodules/atlas-d2k-py/atlas_d2k/pipelines/scRNASeq/config",
         }
 
         if find_dag_runs(session, dag_id, run_id, execution_date):
