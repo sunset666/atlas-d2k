@@ -11,7 +11,6 @@ import yaml
 from cryptography.fernet import Fernet
 from time import sleep
 
-
 from flask import request, Response
 from sqlalchemy import or_
 from airflow import settings
@@ -138,7 +137,7 @@ class NIDDKApiResponse:
     @staticmethod
     def bad_request_bulk(error, success):
         return NIDDKApiResponse.standard_response(NIDDKApiResponse.STATUS_BAD_REQUEST, {"error": error,
-                                                                                          "success": success})
+                                                                                        "success": success})
 
     @staticmethod
     def not_found(error="Resource not found"):
@@ -233,7 +232,7 @@ def _auth_tok_from_request():
     authorization = request.headers.get("authorization")
     LOGGER.info("top of request_ingest.")
     assert authorization[: len("BEARER")].lower() == "bearer", "authorization is not BEARER"
-    substr = authorization[len("BEARER") :].strip()
+    substr = authorization[len("BEARER"):].strip()
     auth_tok = substr
     # LOGGER.info('auth_tok: %s', auth_tok)  # reduce visibility of auth_tok
     return auth_tok
@@ -314,6 +313,8 @@ def request_ingest():
             "ingest_id": ingest_id,
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
+            "atlas_d2k_path": config("connections", "src_path") +
+                              "/submodules/atlas_d2k/pipelines/scRNASeq/config",
         }
 
         if find_dag_runs(session, dag_id, run_id, execution_date):
@@ -458,8 +459,6 @@ def generic_invoke_dag_on_uuid(uuid, process_name):
             "run_id": run_id,
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
-            "atlas_d2k_path": config("connections", "src_path") +
-                              "/submodules/atlas_d2k/pipelines/scRNASeq/config",
             "uuid": uuid,
         }
 
