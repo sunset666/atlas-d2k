@@ -70,7 +70,7 @@ with HMDAG(
     t_download_replicate = BashOperator(
         task_id="download_replicate",
         bash_command="src_dir={{dag_run.conf.atlas_d2k_path}}; \
-                      tmp_dir={{tmp_dir_path(run_id}}; \
+                      tmp_dir={{tmp_dir_path(run_id)}}; \
                       deriva-download-cli --catalog 2 www.atlas-d2k.org \
                       $src_dir/Replicate_Input_Bag.json \
                       $tmp_dir \
