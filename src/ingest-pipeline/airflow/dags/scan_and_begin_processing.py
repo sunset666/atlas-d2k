@@ -95,9 +95,13 @@ with HMDAG(
         task_id="materialize_bdbag",
         bash_command="tmp_dir={{tmp_dir_path(run_id)}}; \
                       cd $tmp_dir; \
-                      unzip {{dag_run.conf.submission_id}}_inputBag.zip; \
-                      bdbag --materialize {{dag_run.conf.submission_id}}_inputBag.zip > $tmp_dir/session.log 2>&1 ; \
-                      echo $?",
+                      bdbag --materialize {{dag_run.conf.submission_id}}_inputBag.zip \
+                      >> session.log 2> error.log ; \
+                      echo $? ; \
+                      if [ -s error.log ] ; \
+                      then echo 'ERROR!' `cat error.log` >> session.log ; \
+                      else rm error.log ; \
+                      fi",
     )
 
     t_create_tmpdir = CreateTmpDirOperator(task_id="create_temp_dir")
