@@ -33,7 +33,7 @@ function get_dir_of_this_script () {
 get_dir_of_this_script  # sets $DIR
 cd $DIR
 
-ENV_SCRIPT="/airflow_environments/env_${HUBMAP_INSTANCE}.sh"
+ENV_SCRIPT="/airflow_environments/env_${NIDDK_INSTANCE}.sh"
 
 . "$(dirname "$(readlink -f "$0")")${ENV_SCRIPT}"
 
