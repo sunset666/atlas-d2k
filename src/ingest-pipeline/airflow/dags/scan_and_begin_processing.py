@@ -117,7 +117,7 @@ with HMDAG(
         print("dag_run conf:")
         ctx = kwargs["dag_run"].conf
         pprint(ctx)
-        download_replcate_retcode = int(kwargs["ti"].xcom_pull(task_ids="download_replicate"))
+        download_replcate_retcode = int(kwargs["ti"].xcom_pull(task_ids="materialize_bdbag"))
         if download_replcate_retcode == 0:
             payload = {
                 "ingest_id": ctx["run_id"],
