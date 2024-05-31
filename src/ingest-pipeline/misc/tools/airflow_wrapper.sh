@@ -42,14 +42,9 @@ get_dir_of_this_script
 cd "$DIR"
 top_level_dir="$(git rev-parse --show-toplevel)"
 
-platform_file="$DIR/airflow_environments/env_${NIDDK_INSTANCE}.sh"
+ENV_SCRIPT="/airflow_environments/env_${HUBMAP_INSTANCE}.sh"
 
-if [[ -e "${platform_file}" ]] ; then
-    source "${platform_file}"
-else
-    echo "Platform configuration file ${platform_file} does not exist"
-    exit -1
-fi
+. "$(dirname "$(readlink -f "$0")")${ENV_SCRIPT}"
 
 # Handle setting of environment variables.
 #
