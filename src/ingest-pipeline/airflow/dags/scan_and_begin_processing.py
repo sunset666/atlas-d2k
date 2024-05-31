@@ -81,11 +81,11 @@ with HMDAG(
     )
 
     t_maybe_materialize = BranchPythonOperator(
-        task_id="maybe_keep_cwl_segmentation",
+        task_id="maybe_keep_bdbag_creation",
         python_callable=pythonop_maybe_keep,
         provide_context=True,
         op_kwargs={
-            "next_op": "flex_maybe_spawn",
+            "next_op": "materialize_bdbag",
             "bail_op": "t_cleanup_tmpdir",
             "test_op": "create_bdbag",
         },
