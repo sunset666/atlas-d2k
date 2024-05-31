@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from pprint import pprint
 
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import BranchPythonOperator
 from niddk_operators.common_operators import (
     CleanupTmpDirOperator,
     CreateTmpDirOperator,
@@ -15,6 +16,7 @@ from utils import (
     get_preserve_scratch_resource,
     downstream_workflow_iter,
     get_queue_resource,
+    pythonop_maybe_keep
 )
 from airflow.configuration import conf as airflow_conf
 # from airflow.exceptions import AirflowException
@@ -67,14 +69,34 @@ with HMDAG(
     #     op_kwargs={},
     # )
 
-    t_download_replicate = BashOperator(
-        task_id="download_replicate",
+    t_create_bdbag = BashOperator(
+        task_id="create_bdbag",
         bash_command="src_dir={{dag_run.conf.atlas_d2k_path}}; \
                       tmp_dir={{tmp_dir_path(run_id)}}; \
                       deriva-download-cli --catalog 2 www.atlas-d2k.org \
                       $src_dir/Replicate_Input_Bag.json \
                       $tmp_dir \
                       rid={{dag_run.conf.submission_id}} > $tmp_dir/session.log 2>&1 ; \
+                      echo $?",
+    )
+
+    t_maybe_materialize = BranchPythonOperator(
+        task_id="maybe_keep_cwl_segmentation",
+        python_callable=pythonop_maybe_keep,
+        provide_context=True,
+        op_kwargs={
+            "next_op": "flex_maybe_spawn",
+            "bail_op": "t_cleanup_tmpdir",
+            "test_op": "create_bdbag",
+        },
+    )
+
+    t_materialize_bdbag = BashOperator(
+        task_id="materialize_bdbag",
+        bash_command="tmp_dir={{tmp_dir_path(run_id)}}; \
+                      cd $tmp_dir; \
+                      unzip {{dag_run.conf.submission_id}}_inputBag.zip; \
+                      bdbag --materialize {{dag_run.conf.submission_id}}_inputBag.zip > $tmp_dir/session.log 2>&1 ; \
                       echo $?",
     )
 
@@ -95,9 +117,9 @@ with HMDAG(
         if download_replcate_retcode == 0:
             payload = {
                 "ingest_id": ctx["run_id"],
-                "parent_submission_id": kwargs["replicate"],
+                "parent_submission_id": kwargs["submission_id"],
                 "dag_provenance_list": get_git_provenance_list(
-                    [__file__, kwargs["ti"].xcom_pull(task_ids="run_validation", key="ivt_path")]
+                    [__file__,]
                 ),
             }
             for next_dag in downstream_workflow_iter("collectiontype", "assay_type"):
@@ -113,4 +135,4 @@ with HMDAG(
         python_callable=flex_maybe_spawn,
     )
 
-    t_create_tmpdir >> t_download_replicate >> t_maybe_spawn >> t_cleanup_tmpdir
+    t_create_tmpdir >> t_create_bdbag >> t_maybe_materialize >> t_materialize_bdbag >> t_maybe_spawn >> t_cleanup_tmpdir
