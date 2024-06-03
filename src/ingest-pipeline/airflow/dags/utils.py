@@ -45,6 +45,8 @@ COMPILED_RESOURCE_MAP: Optional[List[Tuple[Pattern, int, Dict[str, Any]]]] = Non
 
 WORKFLOW_MAP_FILENAME = "workflow_map.yml"  # Expected to be found in this same dir
 WORKFLOW_MAP_SCHEMA = "workflow_map_schema.yml"
+COMPILED_WORKFLOW_MAP: Optional[List[Tuple[Pattern, Pattern, str]]] = None
+
 
 GIT = "git"
 GIT_LOG_COMMAND = [GIT, "log", "-n1", "--oneline"]
