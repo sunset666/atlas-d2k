@@ -581,16 +581,17 @@ def get_parent_data_dirs_list(**kwargs) -> List[Path]:
     """
     ctx = kwargs["dag_run"].conf
     data_dir_list = get_parent_dataset_paths_list(**kwargs)
-    ctx_md_list = ctx["metadata"]
-    if not isinstance(ctx_md_list, list):
-        ctx_md_list = [ctx_md_list]
-    assert len(data_dir_list) == len(
-        ctx_md_list
-    ), "lengths of data directory and md lists do not match"
-    return [
-        Path(data_dir) / ctx_md["metadata"]["data_path"]
-        for data_dir, ctx_md in zip(data_dir_list, ctx_md_list)
-    ]
+    # ctx_md_list = ctx["metadata"]
+    # if not isinstance(ctx_md_list, list):
+    #     ctx_md_list = [ctx_md_list]
+    # assert len(data_dir_list) == len(
+    #     ctx_md_list
+    # ), "lengths of data directory and md lists do not match"
+    # return [
+    #     Path(data_dir) / ctx_md["metadata"]["data_path"]
+    #     for data_dir, ctx_md in zip(data_dir_list, ctx_md_list)
+    # ]
+    return [Path(data_dir_list.pop())]
 
 
 def get_cwltool_base_cmd(tmpdir: Path) -> List[str]:

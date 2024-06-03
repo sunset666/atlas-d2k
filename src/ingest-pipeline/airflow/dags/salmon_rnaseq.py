@@ -49,6 +49,8 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
         "retry_delay": timedelta(minutes=1),
         "xcom_push": True,
         "queue": get_queue_resource(params.dag_id),
+        "executor_config": {"SlurmExecutor": {"slurm_output_path":
+                                                  "/hive/users/niddk/airflow-logs/slurm/salmon_%N_%x_%j.out"}},
     }
 
     with HMDAG(params.dag_id,
