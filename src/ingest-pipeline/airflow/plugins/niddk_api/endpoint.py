@@ -312,6 +312,7 @@ def request_ingest():
             "dag_id": dag_id,
             "run_id": run_id,
             "ingest_id": ingest_id,
+            "pipeline": pipeline,
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
             "atlas_d2k_path": config("connections", "src_path") +
