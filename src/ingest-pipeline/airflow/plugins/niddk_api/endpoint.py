@@ -276,6 +276,7 @@ def request_ingest():
     try:
         submission_id = _get_required_string(data, "submission_id")
         process = _get_required_string(data, "process")
+        pipeline = _get_required_string(data, "pipeline")
     except NIDDKApiInputException as e:
         return NIDDKApiResponse.bad_request(
             "Must specify {} to request data be ingested".format(str(e))
@@ -314,7 +315,7 @@ def request_ingest():
             "crypt_auth_tok": crypt_auth_tok,
             "src_path": config("connections", "src_path"),
             "atlas_d2k_path": config("connections", "src_path") +
-                              "/submodules/atlas-d2k-py/atlas_d2k/pipelines/scRNASeq/config",
+                              f"/submodules/atlas-d2k-py/atlas_d2k/pipelines/{pipeline}/config",
         }
 
         if find_dag_runs(session, dag_id, run_id, execution_date):

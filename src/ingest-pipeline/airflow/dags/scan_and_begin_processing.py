@@ -121,12 +121,13 @@ with HMDAG(
         if download_replcate_retcode == 0:
             payload = {
                 "ingest_id": ctx["run_id"],
-                "parent_submission_id": kwargs["submission_id"],
+                "parent_submission_id": kwargs["dag_run"].conf["submission_id"],
                 "dag_provenance_list": get_git_provenance_list(
                     [__file__,]
                 ),
             }
-            for next_dag in downstream_workflow_iter("collectiontype", "assay_type"):
+            for next_dag in downstream_workflow_iter("generic_collection",
+                                                     kwargs["dag_run"].conf["pipeline"]):
                 yield next_dag, payload
         else:
             return None
