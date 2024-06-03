@@ -125,6 +125,7 @@ with HMDAG(
                 "dag_provenance_list": get_git_provenance_list(
                     [__file__,]
                 ),
+                "parent_lz_path": get_tmp_dir_path(kwargs["run_id"])
             }
             for next_dag in downstream_workflow_iter("generic_collection",
                                                      kwargs["dag_run"].conf["pipeline"]):
