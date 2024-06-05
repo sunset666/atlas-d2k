@@ -42,7 +42,7 @@ default_args = {
     "xcom_push": True,
     "queue": get_queue_resource("scan_and_begin_processing"),
     "executor_config": {"SlurmExecutor": {"slurm_output_path":
-                                              "/hive/users/niddk/airflow-logs/slurm/scan_and_beging_%N_%x_%j.out"}},
+                                              "/hive/users/niddk/airflow-logs/slurm/%x_%N_%j.out"}},
 }
 
 with HMDAG(

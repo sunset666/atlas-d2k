@@ -50,7 +50,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
         "xcom_push": True,
         "queue": get_queue_resource(params.dag_id),
         "executor_config": {"SlurmExecutor": {"slurm_output_path":
-                                                  "/hive/users/niddk/airflow-logs/slurm/salmon_%N_%x_%j.out"}},
+                                                  "/hive/users/niddk/airflow-logs/slurm/%x_%N_%j.out"}},
     }
 
     with HMDAG(params.dag_id,
@@ -242,7 +242,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl2",
-                "bail_op": "set_dataset_error",
+                "bail_op": "join",
                 "test_op": "pipeline_exec",
             },
         )
@@ -253,7 +253,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl3",
-                "bail_op": "set_dataset_error",
+                "bail_op": "join",
                 "test_op": "pipeline_exec_azimuth_annotate",
             },
         )
@@ -264,7 +264,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             provide_context=True,
             op_kwargs={
                 "next_op": "prepare_cwl4",
-                "bail_op": "set_dataset_error",
+                "bail_op": "join",
                 "test_op": "convert_for_ui",
             },
         )
@@ -275,7 +275,7 @@ def generate_salmon_rnaseq_dag(params: SequencingDagParameters) -> DAG:
             provide_context=True,
             op_kwargs={
                 "next_op": "move_data",
-                "bail_op": "set_dataset_error",
+                "bail_op": "join",
                 "test_op": "convert_for_ui_2",
             },
         )
