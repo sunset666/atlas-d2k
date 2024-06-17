@@ -7,4 +7,4 @@ git+https://github.com/hubmapconsortium/cwltool.git@docker-gpu#egg=cwltool
 jsonschema==4.22.0
 git+https://github.com/fair-research/bdbag
 git+https://@github.com/informatics-isi-edu/deriva-py
-airflow-slurm-executor==0.0.6
+airflow-slurm-executor==0.0.7
